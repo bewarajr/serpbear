@@ -1,9 +1,14 @@
+**Kandidat approval V2: `15M_RETEST_V2_APPROVAL_FIX_READY` — belum dideploy.**
+
+**Status aktivasi retest V2: `LIVE_15M_TIMING_RETEST_BLOCKED` — token skrip resmi tidak cocok.**
+
 # SerpBear Hourly Enterkomputer dan Fastwork Pilot
 
-**Status kandidat timing fix: `15M_PILOT_TIMING_FIX_READY`** — commit `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`; belum dideploy.  
+**Status deployment timing fix: `15M_PILOT_TIMING_FIX_DEPLOYMENT_SUCCESS`** — commit `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`; pilot disabled.  
+**Final read-only preflight: `LIVE_15M_TIMING_RETEST_PREFLIGHT_READY`** — aktivasi live tetap memerlukan approval baru.  
 **Status pilot live V2 (historis): `LIVE_PILOT_FAILED`**  
 **Status pilot live 15-minute V1 (Production, 16 Oktober 2026): `LIVE_15M_PILOT_PARTIAL`** — Run `ec65ea43-d743-4316-a6bb-aeaf72511705` selesai tiga siklus dan berhenti otomatis; Enterkomputer teramati tiga kali, Fastwork tidak memperoleh observasi provider.  
-**Production image saat pilot:** commit `f60a5f9a558638dbcea858460d174fe5b15123fc`, image `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a0431162a93243db50b20`; pilot kini nonaktif.  
+**Production image saat pilot historis:** commit `f60a5f9a558638dbcea858460d174fe5b15123fc`, image `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a0431162a93243db50b20`; pilot kini nonaktif.  
 **Status deployment Manual Refresh Guard (tahap sebelumnya):** `MANUAL_REFRESH_GUARD_DEPLOYMENT_SUCCESS` — commit `685a25a8653455a136649546405a1fca8e24ab39`, image `sha256:5e3f405a54522fd8e8a5e9ba163a281a063c3d61508871bc8e4946d49beb720e`. Pilot saat deployment itu disabled.  
 **Pilot V2 (historis):** kode V2 telah dideploy; pilot dihentikan secara terdokumentasi pada 18:23 WIB sebelum siklus pertama setelah dua refresh manual di luar run tercatat. Tidak ada siklus pilot V2 yang berjalan.  
 **Target yang disetujui:** Enterkomputer keyword ID 19 dan Fastwork keyword ID 17.  
@@ -810,3 +815,273 @@ Rollback: image baseline `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a043
 Aktivasi live memerlukan approval baru yang terpisah setelah deployment/verifikasi, run ID baru, dan tiga slot quarter-hour dihitung dari waktu aktivasi/registrasi aktual. Approval live sebelumnya tidak dipakai ulang. Batas tetap tiga cycle/dua request per cycle/enam per run/expiry 90 menit. Provider lambat/error dapat menghabiskan attempted cycle tanpa observasi sukses; tidak ada retry atau perpanjangan otomatis. Mock UAT tidak menjadi bukti keberhasilan SERP live.
 
 **`15M_PILOT_TIMING_FIX_READY`** — implementasi, semua pemeriksaan offline, Docker build, dan isolated Mock Runtime UAT pada image final lulus. Belum dideploy atau diaktifkan di Production.
+
+
+## TIMING FIX — PRODUCTION DEPLOYMENT ATTEMPT (16 Oktober 2026)
+
+Approval deployment: `APPROVE_DEPLOY_SERPBEAR_15M_TIMING_FIX`, commit `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`, tag `serpbear-15m-timing-fix:candidate-20261016-v2`, immutable image `sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d`.
+
+**`15M_PILOT_TIMING_FIX_DEPLOYMENT_BLOCKED`** — proses dihentikan sebelum deployment sesuai instruksi operator karena backup baru gagal. Candidate implementation/UAT status tetap READY; deployment belum dilakukan.
+
+Fresh preflight pada `2026-10-16T04:16:55.023Z` / 11:16:55 WIB lulus: container lama running/healthy dengan image `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a0431162a93243db50b20`, `server.js` dan `cron.js` berjalan, volume `serpbear-official-data` pada `/app/data`. Candidate immutable ID dan OCI revision label cocok dengan approval. Effective Compose memakai image lama yang sama; environment dibandingkan di memori dan cocok dengan container tanpa mencetak credential.
+
+SQLite preflight `integrity_check=ok`: 2 domain/2 keyword, ID19/17 tepat sesuai target/country ID, keduanya posisi 1, URL dan Ranking History tersimpan. Pilot disabled dengan run `ec65ea43-d743-4316-a6bb-aeaf72511705`, cycle_count=3, request_count=3, stop_reason=cycle_limit; tidak ada cycle started, refresh lock, keyword updating, atau retry queue. Total audit 29, termasuk enam audit partial run dengan tiga outbound request historis; dua archived run tetap ada. Global Serper terkonfigurasi/credential dapat didekripsi tanpa request, delay 300000, schedule never, retry false, mock/test tidak aktif.
+
+Backup dicoba melalui container sementara network-none dengan volume Production read-only dan direktori permanen `/var/backups/serpbear` sebagai tujuan. Container backup menggunakan UID/GID 1000:1000. Pilihan UID ini keliru untuk membaca file sumber: metadata read-only menunjukkan SQLite mode `0600`, owner UID 1001. Proses gagal membuka sumber dengan `SQLITE_CANTOPEN`; tidak ada file backup baru atau checksum/integrity backup yang dapat diverifikasi. Izin file Production tidak diubah.
+
+Setelah kegagalan, container Production dikonfirmasi tetap running/healthy pada image lama, Compose permanen tetap `serpbear-hourly-15-minute-pilot:candidate-20261016`, dan proses deployment tidak dilanjutkan. Tidak ada recreate/restart Production, perubahan DB/settings, aktivasi, atau request SERP live. Histori `LIVE_15M_PILOT_PARTIAL` dan `LIVE_PILOT_FAILED` dipertahankan.
+
+Perbaikan minimum untuk percobaan berikutnya: jalankan backup online dalam container sementara UID 0 dengan volume sumber tetap read-only, tulis ke backup permanen, lalu atur owner tujuan UID 1000 dan mode 0600. Verifikasi SHA-256, integrity, serta isi backup sebelum melakukan perubahan Compose/deployment. Jangan mengubah permission SQLite Production atau restore database. Setelah operator menginstruksikan kelanjutan, approval deployment yang sudah diberikan tetap berlaku untuk kandidat yang sama; aktivasi live tetap memerlukan approval baru terpisah.
+
+**`LIVE_15M_TIMING_RETEST_PREFLIGHT_BLOCKED`** — image timing fix belum ter-deploy; final preflight READY belum dapat dinyatakan. Bukti preflight dan hasil attempt ada di `validation-reports/serpbear-15m-timing-deploy-20261016/`.
+
+
+## TIMING FIX — RESUMED PRODUCTION DEPLOYMENT SUCCESS (16 Oktober 2026)
+
+**`15M_PILOT_TIMING_FIX_DEPLOYMENT_SUCCESS`**. Operator menginstruksikan kelanjutan dengan approval `APPROVE_DEPLOY_SERPBEAR_15M_TIMING_FIX` untuk kandidat yang sama. Status BLOCKED pada attempt sebelumnya merupakan catatan historis dan disupersesi hasil kelanjutan ini. Status hasil live sebelumnya `LIVE_15M_PILOT_PARTIAL` dan `LIVE_PILOT_FAILED` tidak berubah.
+
+### Backup recovery terverifikasi
+
+Fresh preflight read-only pada `2026-10-16T04:28:59.861Z` lulus: image lama healthy, pilot disabled, tidak ada cycle started/lock/updating/retry queue, SQLite integrity ok. Numeric metadata sumber: `/app/data` mode 0755 UID/GID 1001:1001; SQLite mode 0600 UID/GID 1001:65533. Container backup UID 0 memverifikasi akses baca sumber dan akses tulis tujuan sebelum membuka database. Container memakai network none, tanpa privileged atau Production credential, volume `serpbear-official-data` read-only, dan hanya direktori tujuan backup writable.
+
+SQLite online backup API memakai koneksi sumber OPEN_READONLY. Ownership/mode sumber diverifikasi tetap sama. Backup baru:
+
+- Path: `/var/backups/serpbear/serpbear-pre-timing-fix-20261016T042932Z.sqlite`.
+- SHA-256: `b3f363ea69cc4a160c01c817306c2fde116ec09ef56c6740119a5b622171ea12` (diverifikasi kembali dari host).
+- Ukuran: 139264 byte; owner UID/GID 1000:1000; permission 0600; direktori permanen `/var/backups/serpbear` mode 0700.
+- `PRAGMA integrity_check=ok` pada backup.
+- Snapshot cocok persis dengan baseline untuk seluruh record domain/keyword/audit, cycle, run archive, dan config: 2 domain/2 keyword ID19/17, 29 audit termasuk enam audit partial run, 3 historical cycle run `ec65ea43-d743-4316-a6bb-aeaf72511705`, 2 archived run, serta seluruh posisi/URL/Ranking History. Pilot tetap disabled.
+
+### Deployment dan konfigurasi permanen
+
+- Commit berjalan: `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`.
+- Image tag permanen: `serpbear-15m-timing-fix:candidate-20261016-v2`.
+- Immutable image ID: `sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d`; OCI revision label cocok dengan commit.
+- Container: `52aa98402cefa4989644d66ec52eab7363fa356dedfdec225e77c4312694452d`, mulai `2026-10-16T04:30:31.573969962Z` / 11:30:31 WIB, status healthy.
+- Hanya service `app` direcreate melalui `docker compose -f compose.official.yml up -d --no-deps --force-recreate --pull never app`. Identitas seluruh container lain dibandingkan sebelum/sesudah dan tidak berubah.
+- Satu-satunya diff Compose permanen adalah image service app: `serpbear-hourly-15-minute-pilot:candidate-20261016` → `serpbear-15m-timing-fix:candidate-20261016-v2`.
+- `docker compose config` lulus; hash seluruh effective config setelah mengeluarkan field image sama dengan sebelum deployment, termasuk env/volume/port/network/healthcheck. Env juga dibandingkan di memori dengan container dan cocok, tanpa mengekspos nilainya. Tidak ada override sementara dan tidak ada configuration drift.
+- Volume tetap `serpbear-official-data` pada `/app/data`; port tetap 127.0.0.1:3180→3000. `server.js` dan `cron.js` berjalan; HTTP lokal `/login` memberi 200.
+- Entrypoint melaporkan tidak ada migration yang dijalankan; daftar SequelizeMeta sebelum/sesudah identik. Tidak ada schema change.
+
+### Before/after Production
+
+| Pemeriksaan | Sebelum | Sesudah / final preflight |
+|---|---|---|
+| Domain / keyword | 2 / 2 | 2 / 2, hash seluruh record identik |
+| Refresh Audit total | 29 | 29, hash seluruh audit identik |
+| Audit partial run | 6, total historis 3 request | 6, seluruh record identik |
+| Historical cycle / archived run | 3 / 2 | 3 / 2, seluruh record identik |
+| ID19 | posisi 1, URL `/simulasi/`, history 15 dan 16 Oktober=1 | identik |
+| ID17 | posisi 1, URL landing-page, history 15 Oktober=1 | identik |
+| Pilot | enabled=0, cycle_count=3, request_count=3, cycle_limit | identik; run historis dipertahankan |
+| Global delay / schedule / retry | 300000 / never / false | identik, hash settings file sama |
+| Active lock / cycle started / retry queue | 0 / 0 / kosong | 0 / 0 / kosong |
+| SQLite integrity | ok | ok |
+
+Tidak ada audit baru, provider request, ranking refresh, atau POST worker saat startup/pasca-deployment. Log hanya menunjukkan polling GET status; tidak ada marker SERP/refresh, HeadersTimeoutError, atau SQLITE_BUSY. Serper tetap terkonfigurasi dan credential dapat didekripsi secara lokal; autentikasi provider tidak dites melalui request live. Mock/test mode tidak aktif.
+
+### Final read-only preflight
+
+Final snapshot `2026-10-16T04:34:36.368Z` cocok persis dengan baseline untuk data/settings/histori. Image/commit/mount/health/effective Compose terkonfirmasi kembali. Marker compiled backend `HOURLY_PILOT_ACTIVE` dan jalur retry tersedia; marker `pilot_cycle_invalidated`/`pilot_cycle_timeout` tersedia pada handler pilot. Guard tidak diuji menggunakan refresh Production.
+
+Konstanta image Production: interval 15 menit, expiry 90 menit, cycle deadline 60000 ms, worker HTTP timeout 90000 ms, stale recovery 120000 ms, maksimum 3 cycle / 2 request per cycle / 6 request per run. Pilot masih disabled; tidak ada job refresh yang aktif. Counter 3/3 dan expiry lama adalah state run historis yang sengaja dipertahankan. Aktivasi berikutnya harus memakai official script dengan approval baru dan UUID run baru; script mengarsipkan histori dan menyiapkan counter run baru secara atomik. Tidak ada counter yang di-reset dalam deployment ini.
+
+**`LIVE_15M_TIMING_RETEST_PREFLIGHT_READY`**. Jadwal tiga slot WIB akan dihitung dari waktu aktivasi/registrasi aktual setelah approval live baru. Deployment approval tidak dipakai untuk aktivasi atau paid request.
+
+### Rollback tersedia dan bukti
+
+Image sebelumnya `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a0431162a93243db50b20` tetap tersedia. Jika perlu rollback karena kegagalan deployment, kembalikan hanya field image Compose ke tag sebelumnya lalu recreate hanya app dengan volume yang sama. Salinan deklarasi sebelumnya ada pada `validation-reports/serpbear-15m-timing-deploy-20261016/compose.before.yml`. Jangan otomatis restore database, menghapus tabel/histori, atau mengubah global settings. Rollback tidak diperlukan pada deployment ini.
+
+Bukti permanen berada pada `validation-reports/serpbear-15m-timing-deploy-20261016/`: baseline, after, final preflight, metadata backup/container, startup log, dan result.json. Backup fisik terverifikasi tetap berada di direktori permanen di atas. Pilot tidak diaktifkan; pekerjaan berhenti setelah pelaporan ini.
+
+
+## LIVE 15M TIMING RETEST V2 — ACTIVATION BLOCKED
+
+Pemeriksaan read-only pada `2026-10-16T04:41:04.406356+00:00` mengonfirmasi container Production running/healthy dengan immutable image `sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d`.
+
+Operator memberikan approval baru `APPROVE_ENTERKOMPUTER_FASTWORK_15M_TIMING_RETEST_V2` dan secara eksplisit mensyaratkan STOP bila string pada skrip resmi tidak cocok. Skrip deployed `/app/scripts/activate-hourly-pilot.js` masih menetapkan `APPROVAL_TOKEN = 'APPROVE_ENTERKOMPUTER_FASTWORK_15_MINUTE_PILOT_V1'`; token retest V2 tidak tersedia/diterima pada source skrip tersebut.
+
+**`LIVE_15M_TIMING_RETEST_BLOCKED`** — dihentikan pada validasi token sebelum aktivasi. Tidak ada run ID baru, activation invocation, refresh, request Serper, atau perubahan Production. Preflight lanjutan dan observasi siklus tidak dijalankan setelah blocker ditemukan. Tidak menggunakan token lama atau melewati validasi. Hasil deployment dan seluruh status live historis tetap dipertahankan.
+
+Perbaikan yang diperlukan sebelum retest: penyesuaian resmi skrip aktivasi agar memvalidasi approval retest V2, disertai validasi kandidat dan approval perubahan kode/deployment terpisah. Scope approval aktivasi saat ini melarang perubahan kode dan deployment ulang, sehingga koreksi tersebut tidak dilakukan dalam pekerjaan ini. Jadwal dan expiry baru belum dihitung karena aktivasi belum terjadi.
+
+
+## LIVE RETEST V2 — APPROVAL TOKEN FIX CANDIDATE
+
+**`15M_RETEST_V2_APPROVAL_FIX_READY`** — implementasi minimal, full offline checks, Docker build, dan Mock Runtime UAT pada image baru lulus. Kandidat belum dideploy; Production tidak diubah atau diaktifkan dalam pekerjaan ini. Status historis LIVE_PILOT_FAILED, LIVE_15M_PILOT_PARTIAL, deployment timing fix sukses, dan activation BLOCKED sebelumnya tetap dipertahankan. Blocker token pada image Production lama baru hilang setelah kandidat ini dideploy melalui approval terpisah.
+
+### Perubahan minimal dan identitas
+
+Worktree terisolasi: `/tmp/serpbear-15m-approval-fix`, baseline `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`.
+
+Satu-satunya perubahan runtime adalah konstanta pada `scripts/activate-hourly-pilot.js`:
+
+```diff
+-const APPROVAL_TOKEN = 'APPROVE_ENTERKOMPUTER_FASTWORK_15_MINUTE_PILOT_V1';
++const APPROVAL_TOKEN = 'APPROVE_ENTERKOMPUTER_FASTWORK_15M_TIMING_RETEST_V2';
+```
+
+Perbandingan strict token tetap berjalan sebelum settings/database dibaca. Tidak ada alias atau fallback V1. Validasi target ID19/17, domain ID11/10, keyword/country, Serper credential lokal, global schedule Never, retry Disabled, lock/updating, new UUID, dan archive run tidak berubah. Scheduler tetap 15 menit, 3 cycle, maksimum 2 request per cycle/6 per run, expiry 90 menit. Manual Refresh Guard, Single-Flight, budget transaction, unique slot, dan timing deadline 60/90/120 detik tetap identik dengan baseline. Tidak ada perubahan `utils/`, `pages/`, database/model/migration, scraper, Dockerfile, dependency/Next.js, atau Production Compose.
+
+- Commit: `fe45fb4404eca6b991622e3f1e5ddf22220c5f92`.
+- Image tag: `serpbear-15m-retest-v2-approval:candidate-20261016`.
+- Immutable image ID: `sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d`.
+- Docker image OCI revision label dan container UAT `.Image` cocok dengan identitas tersebut.
+- Diff keseluruhan: 5 file, 90 insertion/9 deletion. File: `scripts/activate-hourly-pilot.js`, `__tests__/pilotApprovalToken.test.ts`, serta harness `scripts/uat-pilot-timing/README.md`, `compose.yml`, `control.cjs`. Compose yang berubah hanya harness UAT di worktree terisolasi, bukan `compose.official.yml` Production.
+
+### Regression dan build
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Full Jest | PASS — 26 suite / 123 tes |
+| TypeScript `tsc --noEmit` | PASS |
+| ESLint | PASS |
+| Next.js production build | PASS |
+| Docker build image baru | PASS |
+
+Tes baru menjalankan script melalui VM terisolasi dengan dependency sintetis: V1, token invalid, dan token kosong ditolak sebelum read settings/open DB/provider; V2 diterima dengan validasi identity dan archive SQL, maksimum 3/6, expiry tepat 90 menit, tanpa provider invocation. Suite safety/timing/guard yang sudah ada tetap lulus. Dependency registry digunakan hanya untuk proses build; Mock Runtime UAT memiliki network internal tanpa external egress.
+
+### Isolated Mock Runtime UAT
+
+Project Docker khusus `serpbear15m-approval-uat-20261016`, database volume khusus, synthetic credentials, bind harness read-only, internal-only network, tanpa port host atau Production mount/secrets. Image bundling script diperiksa langsung: hanya V2 yang diwajibkan dan literal V1 tidak ada di script resmi.
+
+| Token | Hasil script pada UAT | Database | Outbound Search API saat validasi/aktivasi |
+|---|---|---|---:|
+| `APPROVE_ENTERKOMPUTER_FASTWORK_15_MINUTE_PILOT_V1` | ditolak | byte-identical; config unchanged | 0 |
+| token invalid | ditolak | byte-identical; config unchanged | 0 |
+| `APPROVE_ENTERKOMPUTER_FASTWORK_15M_TIMING_RETEST_V2` | diterima; UUID baru | config pilot bounded diaktifkan pada DB sintetis saja | 0 |
+
+Synthetic run ID `bdece577-b861-46f6-ab9d-40bf6cb6111c` kemudian dijalankan oleh cron dengan slot simulasi 17 Oktober 2026 09:00/09:15/09:30 WIB:
+
+- Ketiga cycle completed; kedua ID19/17 diproses setiap cycle; enam audit completed/2xx, satu outbound per keyword per cycle, **enam request pilot mock total**.
+- Matched URL ID19 `https://www.enterkomputer.com/simulasi`; ID17 `https://fastwork.id/other-listing`. Fastwork membuktikan hostname matching pada mock, bukan ranking exact landing-page.
+- Gap target per cycle 198/243/179 ms, tanpa jeda lima menit; global setting delay tetap 300000. Tidak ada HeadersTimeoutError, worker_interrupted, atau SQLITE_BUSY.
+- Manual/bulk/domain/retry/source spoof: tujuh kasus HTTP 409, delapan audit skipped/zero request, ranking/counter unchanged. Existing lock menolak aktivasi dan Single-Flight menolak overlap.
+- Restart sesudah cycle pertama tidak mengulang slot; setelah cycle ketiga dan restart berikutnya tetap `enabled=0`, `cycle_count=3`, `request_count=6`, `stop_reason=cycle_limit`. Tidak ada cycle keempat atau request ketujuh setelah interval berikutnya.
+- SQLite integrity ok, 233 iterasi akses reader/writer tanpa failure; unselected keyword/history tetap aman selama pilot. Normal refresh diuji terpisah setelah auto-stop: tiga mock request tambahan, delay global tetap 300000 (clock UAT memetakan sleep menjadi 1000 ms; gap aktual 1183 ms), counter pilot tetap enam.
+- Boundary expiry 90 menit diuji terpisah: disabled/expired dan nol request tambahan. Egress probe ditolak sebelum network. Next.js dan cron sehat; log tidak memuat credential sintetis.
+- Semua container/network/volume UAT milik task sudah dibersihkan. Tidak ada live Serper/Google request atau Production activation.
+
+Bukti permanen: `validation-reports/serpbear-15m-retest-v2-approval-20261016/` berisi manifest, Jest/TS/ESLint/Next/Docker log, UAT phases/runtime log, dan `uat-evidence.json`. SHA-256 evidence JSON: `4ddfacf4feef44bc7d890cb8f844a6c8a1c73b6e04960211b9e517e8f393c216`.
+
+### Instruksi deployment minimum — menunggu persetujuan operator terpisah
+
+1. Setujui deployment khusus commit `fe45fb4404eca6b991622e3f1e5ddf22220c5f92` dan immutable image `sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d`; approval deployment kandidat sebelumnya tidak digunakan otomatis untuk image baru.
+2. Fresh preflight Production: image/health, pilot disabled, ID19/17, no active cycle/lock/updating, Never/retry Disabled/delay 300000/mock off. Buat backup SQLite online konsisten di storage permanen dan verifikasi SHA-256/integrity serta histori/audit/ranking sebelum deploy.
+3. Setelah image tag diverifikasi ke immutable ID, ubah hanya image app pada Compose permanen menjadi `serpbear-15m-retest-v2-approval:candidate-20261016`, validasi effective config, lalu deploy hanya app memakai `docker compose -f compose.official.yml up -d --no-deps --force-recreate --pull never app`. Tidak ada schema migration baru.
+4. Verifikasi image/commit, health/server/cron, data/settings/histori persis sama, guard backend, serta script yang mewajibkan V2 dan menolak V1 secara inspeksi read-only. Pilot tetap disabled dan tidak ada startup refresh/provider request. Aktivasi live tidak termasuk deployment ini.
+5. Jika deployment gagal, rollback hanya app/image Compose ke timing-fix sebelumnya `serpbear-15m-timing-fix:candidate-20261016-v2`, immutable ID `sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d`; pertahankan volume/histori, tanpa restore DB otomatis.
+
+Approval Live Retest V2 yang sudah diberikan diakui, tetapi tidak dijalankan dalam task candidate-only ini. Aktivasi tetap pekerjaan terpisah setelah deployment disetujui dan diverifikasi. **`15M_RETEST_V2_APPROVAL_FIX_READY`**.
+
+
+## LIVE 15M TIMING RETEST V2 — PRODUCTION RESULTS
+
+**`LIVE_15M_TIMING_RETEST_PASS`** — deployment kandidat approval V2 berhasil, run baru berjalan otomatis pada ketiga slot, batas request dipenuhi, dan auto-stop terverifikasi sesudah slot keempat.
+
+### Deployment dan backup
+
+- Deployed commit: `fe45fb4404eca6b991622e3f1e5ddf22220c5f92`.
+- Image: `serpbear-15m-retest-v2-approval:candidate-20261016`, immutable ID `sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d`; OCI revision cocok dengan commit.
+- Compose permanen `compose.official.yml` sekarang menunjuk image tersebut. Hanya service `app` yang direcreate. Container sehat, `server.js` dan `cron.js` berjalan, `/login` lokal memberi HTTP 200.
+- Skrip dalam container mewajibkan token `APPROVE_ENTERKOMPUTER_FASTWORK_15M_TIMING_RETEST_V2`; token V1 tidak diterima. API bundle memuat Manual Refresh Guard. Test/mock mode mati.
+- Backup sebelum deployment: `/var/backups/serpbear/serpbear-pre-retest-v2-20261016T050823Z.sqlite`, SHA-256 `b3f363ea69cc4a160c01c817306c2fde116ec09ef56c6740119a5b622171ea12`, 139264 byte, owner 1000:1000, mode 0600, `PRAGMA integrity_check=ok`. Snapshot konsisten dibuat dengan SQLite online backup dari volume sumber read-only.
+- Sebelum aktivasi: 2 domain/2 keyword; ID19 dan ID17 sesuai target; 29 audit; 3 siklus historis; 2 run archive; pilot disabled; lock dan retry queue kosong; integrity `ok`. Posisi awal kedua target 1. Semua histori lama dipertahankan.
+
+### Aktivasi dan jadwal
+
+- Approval live: `APPROVE_ENTERKOMPUTER_FASTWORK_15M_TIMING_RETEST_V2`.
+- Skrip resmi membuat tepat satu run baru: `06c13ef9-91f7-42a1-91ac-6aefa5679063`.
+- Aktivasi: `2026-10-16T05:10:00.671Z` / 12:10:00.671 WIB. Expiry: `2026-10-16T06:40:00.671Z` / 13:40:00.671 WIB.
+- Cron mencatat registrasi pada `2026-10-16T05:11:00.087Z` / 12:11:00.087 WIB, dengan slot nyata 12:15, 12:30, dan 12:45 WIB (`0 */15 * * * *`, zona `Asia/Jakarta`). `startupRefresh=false`. Pada pemeriksaan setelah aktivasi, cycle/request tetap 0/0 dan audit tetap 29; aktivasi tidak mengirim request.
+- Konfigurasi run: target `[19,17]`, maksimum 3 siklus, 2 request/siklus, 6 request total, expiry 90 menit, retry tidak aktif. Global schedule tetap `never`, global retry `false`, global `scrape_delay=300000`; pilot memakai delay 0.
+
+### Hasil produksi per audit
+
+Durasi adalah `end_time - start_time` dari Refresh Audit. Provider menyimpan kategori HTTP `2xx` (bukan kode numerik terpisah). Setiap baris memakai satu request Serper Basic.
+
+| Siklus / slot WIB | Keyword ID | Mulai aktual WIB | Posisi sebelum → sesudah | Matched URL aktual | Provider / request | Durasi | Refresh Audit ID | Status |
+|---|---:|---|---:|---|---|---:|---|---|
+| 1 — 12:15 | 19 | 12:15:00.124 | 1 → 1 | `https://www.enterkomputer.com/simulasi/` | 2xx / 1 | 1.579 ms | `404fe9ad-6f71-43f3-b5c6-28d9bd83464d` | completed |
+| 1 — 12:15 | 17 | 12:15:01.715 | 1 → 1 | `https://fastwork.id/web-design/landing-page` | 2xx / 1 | 2.520 ms | `8c73f524-5323-457a-808d-22c8bf6ecc63` | completed |
+| 2 — 12:30 | 19 | 12:30:00.120 | 1 → 1 | `https://www.enterkomputer.com/simulasi/` | 2xx / 1 | 3.675 ms | `145f1005-f240-4750-beb5-b46bd90a01a7` | completed |
+| 2 — 12:30 | 17 | 12:30:03.806 | 1 → 1 | `https://fastwork.id/web-design/landing-page` | 2xx / 1 | 5.083 ms | `6690609a-e46e-4f96-87b9-2fce32aad519` | completed |
+| 3 — 12:45 | 19 | 12:45:00.115 | 1 → 1 | `https://www.enterkomputer.com/simulasi/` | 2xx / 1 | 1.508 ms | `2d9c53ee-a194-43c1-95b2-8c81625740fc` | completed |
+| 3 — 12:45 | 17 | 12:45:01.634 | 1 → 1 | `https://fastwork.id/web-design/landing-page` | 2xx / 1 | 1.732 ms | `02a62234-e574-41dd-b01a-a36a8f98a8f5` | completed |
+
+Kedua keyword diproses pada semua siklus. Jeda dari audit Enterkomputer selesai ke audit Fastwork mulai sekitar 11 ms di tiap siklus; tidak ada jeda lima menit. Enterkomputer matched pada path `/simulasi/`. Fastwork matched pada URL `/web-design/landing-page`; konfigurasi yang disetujui tetap hostname `fastwork.id`. Posisi tidak berubah selama run. Ranking History menyimpan nilai harian 1 untuk 16 Oktober pada kedua keyword. Field device tidak dipakai sebagai bukti SERP perangkat tertentu.
+
+### Budget, shutdown, dan integritas akhir
+
+- Tiga siklus selesai; enam audit baru semuanya `completed`, kategori provider `2xx`, satu outbound request per keyword per siklus. Total aplikasi: **6 request dari maksimum 6**. Pemakaian provider yang ditagihkan tidak tersedia untuk verifikasi independen; perkiraan sekitar enam query credit, tidak dijamin.
+- Tidak ada `HeadersTimeoutError`, `worker_interrupted`, `pilot_cycle_timeout`, retry, catch-up, atau refresh manual pada run ini.
+- Setelah siklus ketiga: `enabled=0`, `cycle_count=3`, `request_count=6`, `stop_reason=cycle_limit`. Run diarsipkan pada `2026-10-16T05:45:03.383Z` / 12:45:03.383 WIB.
+- Pemeriksaan read-only pada `2026-10-16T06:01:28.142Z` / 13:01:28.142 WIB, setelah batas slot keempat 13:00 WIB: tidak ada event slot/error pada atau sesudah batas tersebut; run tetap memiliki tepat tiga siklus bernomor 1–3. Tidak ada request ketujuh.
+- Audit berjumlah 35 (29 sebelumnya + 6 pilot). Tabel cycle memuat tepat tiga siklus baru. Dua domain dan dua keyword tetap ada; target ID/teks/domain/country tidak berubah. Kedua posisi tetap 1, URL tersimpan sesuai hasil aktual, `updating=0`, lock kosong, retry queue kosong, SQLite `integrity_check=ok`.
+- Histori lama tetap tersedia: run `573beda3-6b8f-472f-b5ea-bf40b6318a57` dan `ec65ea43-d743-4316-a6bb-aeaf72511705`. Run baru kini juga tercatat di archive dengan `cycle_limit`; tidak ada histori yang direset atau dihapus.
+- Global Schedule tetap `never`, retry tetap disabled, mock/test mode mati, dan container masih healthy pada image/commit yang disetujui.
+
+**Status akhir: `LIVE_15M_TIMING_RETEST_PASS`.** Monitoring berhenti otomatis sesudah tiga siklus; pilot tidak diaktifkan kembali.
+
+
+## SERP QUERY MISMATCH — ID 23 LIVE PROBE
+
+**`SERP_QUERY_MISMATCH_PROVIDER_REPRODUCED`** — satu POST langsung ke Serper.dev mereproduksi enam hasil tak relevan yang sama persis dengan snapshot tersimpan untuk keyword ID 23. Hasil ganjil dapat direproduksi dari provider tanpa jalur refresh/persistensi SerpBear. Ini tidak membuktikan secara retrospektif payload request historis, karena Refresh Audit tidak menyimpan `searchParameters` atau request body.
+
+### Preflight dan hasil request tunggal
+
+- Production `serpbear-official-app` healthy pada image `sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d`.
+- Keyword ID 23 cocok: `Mahjong jp88 slot gacor`, domain `mahjongjp88.club`, country `ID`, device field `mobile`. Sebelum dan sesudah probe: `lastUpdated=2026-10-16T06:55:22.883Z`, posisi 0, URL kosong, history `{"2026-10-16":0}`; snapshot berisi enam hasil di bawah.
+- Audit snapshot ID23: `e5792974-af3e-465e-9850-74eabfd2afc2`, trigger `create`, actor category `authenticated_user`, selesai `2026-10-16T06:55:22.887Z`, status completed, requested pages `[1]`, outbound 1, HTTP category `2xx`, tanpa error, posisi `0 → 0`; page metadata mencatat raw 6, accepted 6, filtered 0.
+- Provider terkonfigurasi sebagai Serper, test mode mati, credential tersedia. Credential tidak dicetak.
+- Satu request dimulai `2026-10-16T07:18:43.021Z` / `2026-10-16 14:18:43 WIB`, selesai `2026-10-16T07:18:44.700Z` / `2026-10-16 14:18:44 WIB`. Request dikirim langsung dari container dengan satu pemanggilan `fetch`, tanpa retry atau redirect.
+- Body persis: `{"q":"Mahjong jp88 slot gacor","gl":"id","hl":"id","page":1,"num":10}`.
+- HTTP `200`. Provider mengembalikan `searchParameters.q="Mahjong jp88 slot gacor"`, `gl="id"`, `hl="id"`; organic count 6. Domain `mahjongjp88.club` tidak muncul.
+- Outbound request oleh probe ini: **1 tepat**. Response langsung tidak membuat Refresh Audit atau memperbarui ranking.
+
+### Perbandingan snapshot dan respons langsung
+
+| Parameter | Historical Snapshot (keyword ID 23) | Live Serper Response |
+|---|---|---|
+| Keyword | `Mahjong jp88 slot gacor` | `Mahjong jp88 slot gacor` |
+| Waktu | Audit create `2026-10-16T06:55:21.524Z`; selesai `06:55:22.887Z` UTC | Mulai `07:18:43.021Z`; selesai `07:18:44.700Z` UTC |
+| Query parameters | Body/`searchParameters` tidak disimpan; audit mencatat page `[1]` | `q` tepat; `gl=id`; `hl=id`; body page 1, num 10 |
+| HTTP status | Kategori audit `2xx` | `200` |
+| Organic results | 6 diterima, 0 difilter | 6 |
+| Matched target domain | Tidak ditemukan | Tidak ditemukan |
+| Result URLs | 1. https://beintoo.com/en/category/case-histories-en/ <br> 2. https://translate.google.com/translate?u=https://notes.indezine.com/&hl=id&sl=en&tl=id&client=srp <br> 3. https://espritautomation.com/project-viper/ <br> 4. https://beintoo.com/en/post-campaign-analysis/ <br> 5. https://translate.google.com/translate?u=https://www.shpgroup.eu/magazine/&hl=id&sl=en&tl=id&client=srp <br> 6. https://translate.google.com/translate?u=https://get.resova.com/&hl=id&sl=en&tl=id&client=srp | Identik dengan keenam URL historical snapshot di kolom kiri |
+
+Detail setiap hasil; posisi, title, dan link live sama dengan snapshot:
+
+| Position | Title | Historical link | Live link |
+|---:|---|---|---|
+| 1 | CASE HISTORIES | https://beintoo.com/en/category/case-histories-en/ | https://beintoo.com/en/category/case-histories-en/ |
+| 2 | Catatan PowerPoint - | https://translate.google.com/translate?u=https://notes.indezine.com/&hl=id&sl=en&tl=id&client=srp | https://translate.google.com/translate?u=https://notes.indezine.com/&hl=id&sl=en&tl=id&client=srp |
+| 3 | viper testimonial - allan liddle steel | https://espritautomation.com/project-viper/ | https://espritautomation.com/project-viper/ |
+| 4 | Post Campaign Analysis \| Beintoo - Data Driven Company | https://beintoo.com/en/post-campaign-analysis/ | https://beintoo.com/en/post-campaign-analysis/ |
+| 5 | Majalah - Harmoni - SHP Group | https://translate.google.com/translate?u=https://www.shpgroup.eu/magazine/&hl=id&sl=en&tl=id&client=srp | https://translate.google.com/translate?u=https://www.shpgroup.eu/magazine/&hl=id&sl=en&tl=id&client=srp |
+| 6 | Temukan Perangkat Lunak Pemesanan Aktivitas Resova ... | https://translate.google.com/translate?u=https://get.resova.com/&hl=id&sl=en&tl=id&client=srp | https://translate.google.com/translate?u=https://get.resova.com/&hl=id&sl=en&tl=id&client=srp |
+
+### Analisis penyebab
+
+- **Provider reproduction: confirmed.** Respons langsung Serper dengan query dan parameter yang disetujui berisi Beintoo, IndeZine, Esprit Automation, SHP Group, dan Resova yang sama seperti snapshot. Hasil aneh bukan artefak yang hanya muncul setelah pemetaan atau penyimpanan oleh aplikasi.
+- **Query adapter:** inspeksi source yang berjalan menunjukkan `q` berasal langsung dari keyword tanpa normalisasi, `gl` berasal dari country lowercase, dan `hl` untuk ID adalah `id`. Request memakai endpoint `https://google.serper.dev/search`, POST JSON, `page=1`, dan `num` maksimal 10. Tidak ada `site:` atau field device pada body. Offline mock validation memastikan body ini dan isolasi update pada ID yang benar.
+- **Mapping/persistence:** adapter mengambil `organic[]`, mempertahankan title/link dan posisi provider; audit historis mencatat enam raw dan enam accepted, nol filtered. Live direct response menghasilkan enam entry yang sama, sehingga tidak ada bukti bug mapping/persistence sebagai sumber ketidakrelevanan.
+- **UI label:** “6 results scraped • 94 positions skipped” berarti enam posisi memiliki hasil dari array SerpBear berukuran 100; 94 posisi sisanya tidak memiliki data. Audit menyatakan hanya page 1 diminta, jadi angka 94 bukan 94 organic results yang dibuang provider.
+- **Historical query uncertainty:** audit lama tidak menyimpan request body atau metadata `searchParameters`. Walau kode adapter dan hasil live konsisten dengan query tepat, bukti yang tersedia tidak memastikan payload historis byte-for-byte atau mengapa provider mengembalikan halaman tersebut.
+- **Snapshot/UI freshness:** ID23 `lastUpdated`, posisi, URL, history, dan enam hasil tetap sama sesudah probe; tidak ada indikasi snapshot tertukar oleh probe. Tidak ada bukti cache UI menyebabkan snapshot tersimpan ini.
+
+### Audit tambahan dan integritas
+
+- SQLite `PRAGMA integrity_check=ok`; snapshot ID23 tidak berubah setelah probe. Probe langsung tidak menulis database dan karenanya tidak mempunyai Refresh Audit SerpBear.
+- Pemeriksaan pascaprobe menemukan dua audit `manual` untuk keyword lain setelah audit create ID23 dan sebelum probe: ID20 (`2026-10-16T06:57:37.256Z`, satu outbound, kategori `2xx`) dan ID21 (`2026-10-16T06:57:47.400Z`, satu outbound, kategori `2xx`). Keduanya bukan bagian dari probe ini dan tidak dapat diatribusikan kepada individu berdasarkan audit. Tidak ada audit baru untuk ID23 dari probe langsung.
+- Total request yang dilakukan oleh probe terotorisasi ini: **1**. Audit Production terpisah mencatat dua refresh manual ID20/21 sebelum waktu probe; keduanya tidak termasuk request probe.
+
+### Rekomendasi minimum
+
+Tidak ada perbaikan adapter, persistence, atau UI yang didukung bukti sebagai solusi untuk membuat hasil provider menjadi relevan. Jangan menambahkan `site:` karena itu mengubah query ranking yang diukur. Pertahankan pencatatan `searchParameters.q/gl/hl` dan metadata request non-rahasia pada audit mendatang agar payload historis dapat diverifikasi; perubahan instrumentasi memerlukan persetujuan tersendiri. Menetapkan akar teknis mengapa Serper mengembalikan hasil ini memerlukan bukti provider tambahan.
+
+Validasi offline dengan mock memastikan keyword persis diteruskan sebagai `q`, country/language menjadi `gl=id`/`hl=id`, organic mapping disimpan hanya pada ID23, dan snapshot keyword lain tidak berubah. Jest sementara untuk investigasi: **2 suite / 22 test passed**. Tidak ada perubahan source atau database Production.
+
+**Status akhir: `SERP_QUERY_MISMATCH_PROVIDER_REPRODUCED`.**

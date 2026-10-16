@@ -1,0 +1,71 @@
+ Network serpbear15m-approval-uat-20261016_internal Creating 
+ Network serpbear15m-approval-uat-20261016_internal Created 
+ Volume serpbear15m-approval-uat-20261016_data Creating 
+ Volume serpbear15m-approval-uat-20261016_data Created 
+ Container serpbear15m-approval-uat-20261016-init-1 Creating 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Creating 
+ Container serpbear15m-approval-uat-20261016-init-1 Created 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Created 
+ Container serpbear15m-approval-uat-20261016-app-1 Creating 
+ Container serpbear15m-approval-uat-20261016-app-1 Created 
+ Container serpbear15m-approval-uat-20261016-init-1 Starting 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Starting 
+ Container serpbear15m-approval-uat-20261016-init-1 Started 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Started 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Waiting 
+ Container serpbear15m-approval-uat-20261016-init-1 Waiting 
+ Container serpbear15m-approval-uat-20261016-init-1 Exited 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Healthy 
+ Container serpbear15m-approval-uat-20261016-app-1 Starting 
+ Container serpbear15m-approval-uat-20261016-app-1 Started 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Waiting 
+ Container serpbear15m-approval-uat-20261016-app-1 Waiting 
+ Container serpbear15m-approval-uat-20261016-init-1 Waiting 
+ Container serpbear15m-approval-uat-20261016-init-1 Exited 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Healthy 
+ Container serpbear15m-approval-uat-20261016-app-1 Healthy 
+sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d fe45fb4404eca6b991622e3f1e5ddf22220c5f92
+Bundled script requires V2 only
+{"phase":"startup","requests":0,"pilotDisabled":true,"globalDelayMs":300000}
+{"phase":"approval_tokens","rejected":["V1","invalid"],"databaseByteIdentical":true,"providerDelta":0}
+{"phase":"lock","activationRejected":true,"singleFlightRejected":true,"providerDelta":0}
+{"phase":"activation","runId":"bdece577-b861-46f6-ab9d-40bf6cb6111c","simulatedSlotsWIB":["09:00","09:15","09:30"],"expiryMinutes":90,"requests":0}
+{"phase":"guards","results":[{"id":"19","status":409},{"id":"17","status":409},{"id":"19,17","status":409},{"id":"19,20","status":409},{"id":"all&domain=fastwork.id%2Fweb-design%2Flanding-page","status":409},{"id":"17&source=retry","status":409},{"id":"19&source=hourly_pilot","status":409}],"providerDelta":0,"rankingsUnchanged":true,"countersUnchanged":true,"blockedAudits":8}
+{"phase":"wait","completedCycles":1}
+ Container serpbear15m-approval-uat-20261016-app-1 Restarting 
+ Container serpbear15m-approval-uat-20261016-app-1 Started 
+{"phase":"concurrent_sqlite_reader_writer","reads":233,"failures":0}
+{"phase":"wait","completedCycles":3}
+{"phase":"final","config":{"id":1,"run_id":"bdece577-b861-46f6-ab9d-40bf6cb6111c","enabled":0,"started_at":"2026-10-17T01:59:00.000Z","expires_at":"2026-10-17T03:29:00.000Z","target_keyword_ids":"[19,17]","max_cycles":3,"max_requests":6,"cycle_count":3,"request_count":6,"stop_reason":"cycle_limit"},"cycleStatuses":["completed","completed","completed"],"requests":6,"targetRequestGapsMs":[198,243,179],"auditRows":6,"sqlite":"ok","globalDelayMs":300000,"unselectedUnchanged":true}
+ Container serpbear15m-approval-uat-20261016-app-1 Restarting 
+ Container serpbear15m-approval-uat-20261016-app-1 Started 
+{"phase":"final","config":{"id":1,"run_id":"bdece577-b861-46f6-ab9d-40bf6cb6111c","enabled":0,"started_at":"2026-10-17T01:59:00.000Z","expires_at":"2026-10-17T03:29:00.000Z","target_keyword_ids":"[19,17]","max_cycles":3,"max_requests":6,"cycle_count":3,"request_count":6,"stop_reason":"cycle_limit"},"cycleStatuses":["completed","completed","completed"],"requests":6,"targetRequestGapsMs":[198,243,179],"auditRows":6,"sqlite":"ok","globalDelayMs":300000,"unselectedUnchanged":true}
+ serpbear15m-approval-uat-20261016-app-1 Copying serpbear15m-approval-uat-20261016-app-1:/app/data/uat-final-evidence.json to /tmp/serpbear-approval-uat-evidence.json
+ serpbear15m-approval-uat-20261016-app-1 Copied serpbear15m-approval-uat-20261016-app-1:/app/data/uat-final-evidence.json to /tmp/serpbear-approval-uat-evidence.json
+{"phase":"normal_after_stop","configuredDelayMs":"300000","simulatedDelayMs":1000,"actualRequestGapMs":1183,"manualTargetAvailable":true,"separateMockRequests":3,"pilotRequests":6}
+{"phase":"expiry_boundary","expiryMinutes":90,"providerDelta":0,"enabled":0,"stopReason":"expired"}
+External egress blocked before network
+sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d healthy {} [{"Type":"bind","Source":"/tmp/serpbear-15m-approval-fix/scripts/uat-pilot-timing","Destination":"/opt/uat","Mode":"ro","RW":false,"Propagation":"rprivate"},{"Type":"volume","Name":"serpbear15m-approval-uat-20261016_data","Source":"/var/lib/docker/volumes/serpbear15m-approval-uat-20261016_data/_data","Destination":"/app/data","Driver":"local","Mode":"rw","RW":true,"Propagation":""}]
+true
+PID                 COMMAND
+2231493             npm exec concurrently node server.js node cron.js
+2231610             node /app/node_modules/.bin/concurrently node server.js node cron.js
+2231617             node server.js
+2231618             node cron.js
+[{"integrity_check":"ok"}]
+ Container serpbear15m-approval-uat-20261016-app-1 Stopping 
+ Container serpbear15m-approval-uat-20261016-app-1 Stopped 
+ Container serpbear15m-approval-uat-20261016-app-1 Removing 
+ Container serpbear15m-approval-uat-20261016-app-1 Removed 
+ Container serpbear15m-approval-uat-20261016-init-1 Stopping 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Stopping 
+ Container serpbear15m-approval-uat-20261016-init-1 Stopped 
+ Container serpbear15m-approval-uat-20261016-init-1 Removing 
+ Container serpbear15m-approval-uat-20261016-init-1 Removed 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Stopped 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Removing 
+ Container serpbear15m-approval-uat-20261016-mock-serper-1 Removed 
+ Volume serpbear15m-approval-uat-20261016_data Removing 
+ Network serpbear15m-approval-uat-20261016_internal Removing 
+ Volume serpbear15m-approval-uat-20261016_data Removed 
+ Network serpbear15m-approval-uat-20261016_internal Removed 

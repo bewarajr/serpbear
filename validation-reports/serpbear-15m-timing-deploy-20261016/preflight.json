@@ -1,0 +1,191 @@
+{
+  "checkedAt": "2026-10-16T04:16:55.023Z",
+  "config": [
+    {
+      "id": 1,
+      "run_id": "ec65ea43-d743-4316-a6bb-aeaf72511705",
+      "enabled": 0,
+      "started_at": "2026-10-16T02:25:01.285Z",
+      "expires_at": "2026-10-16T03:55:01.285Z",
+      "target_keyword_ids": "[19,17]",
+      "max_cycles": 3,
+      "max_requests": 6,
+      "cycle_count": 3,
+      "request_count": 3,
+      "stop_reason": "cycle_limit"
+    }
+  ],
+  "cycles": [
+    {
+      "slot_key": "ec65ea43-d743-4316-a6bb-aeaf72511705:2026-10-16T02:30:00.000Z",
+      "run_id": "ec65ea43-d743-4316-a6bb-aeaf72511705",
+      "cycle_number": 1,
+      "scheduled_at": "2026-10-16T02:30:00.000Z",
+      "started_at": "2026-10-16T02:30:00.057Z",
+      "ended_at": "2026-10-16T02:40:01.999Z",
+      "status": "failed",
+      "outbound_request_count": 1,
+      "error_category": "one_or_more_keyword_refreshes_failed",
+      "results": "[{\"keywordId\":19,\"refreshId\":\"477bd564-de89-47f8-9330-1ff246ad201f\",\"auditStatus\":\"completed\",\"auditError\":null,\"outboundRequestCount\":1,\"position\":1,\"matchedUrl\":\"https://www.enterkomputer.com/simulasi/\"},{\"keywordId\":17,\"refreshId\":\"36a97ea6-8c65-4085-abf6-9722630558cf\",\"auditStatus\":\"failed\",\"auditError\":\"scrape_error\",\"outboundRequestCount\":0,\"position\":null,\"matchedUrl\":null}]"
+    },
+    {
+      "slot_key": "ec65ea43-d743-4316-a6bb-aeaf72511705:2026-10-16T02:45:00.000Z",
+      "run_id": "ec65ea43-d743-4316-a6bb-aeaf72511705",
+      "cycle_number": 2,
+      "scheduled_at": "2026-10-16T02:45:00.000Z",
+      "started_at": "2026-10-16T02:45:00.050Z",
+      "ended_at": "2026-10-16T02:55:01.607Z",
+      "status": "failed",
+      "outbound_request_count": 1,
+      "error_category": "one_or_more_keyword_refreshes_failed",
+      "results": "[{\"keywordId\":19,\"refreshId\":\"53b1c9c2-7617-4dcf-bd81-8c2506e1dd16\",\"auditStatus\":\"completed\",\"auditError\":null,\"outboundRequestCount\":1,\"position\":1,\"matchedUrl\":\"https://www.enterkomputer.com/simulasi/\"},{\"keywordId\":17,\"refreshId\":\"859e65d2-0b6e-43e2-b1f5-c621db743c47\",\"auditStatus\":\"failed\",\"auditError\":\"scrape_error\",\"outboundRequestCount\":0,\"position\":null,\"matchedUrl\":null}]"
+    },
+    {
+      "slot_key": "ec65ea43-d743-4316-a6bb-aeaf72511705:2026-10-16T03:00:00.000Z",
+      "run_id": "ec65ea43-d743-4316-a6bb-aeaf72511705",
+      "cycle_number": 3,
+      "scheduled_at": "2026-10-16T03:00:00.000Z",
+      "started_at": "2026-10-16T03:00:00.052Z",
+      "ended_at": "2026-10-16T03:10:01.760Z",
+      "status": "failed",
+      "outbound_request_count": 1,
+      "error_category": "one_or_more_keyword_refreshes_failed",
+      "results": "[{\"keywordId\":19,\"refreshId\":\"9cf921df-0a3f-44f8-aa83-d450f654a70e\",\"auditStatus\":\"completed\",\"auditError\":null,\"outboundRequestCount\":1,\"position\":1,\"matchedUrl\":\"https://www.enterkomputer.com/simulasi/\"},{\"keywordId\":17,\"refreshId\":\"8c39b4f7-9df0-4ffa-a72a-531e9229a877\",\"auditStatus\":\"failed\",\"auditError\":\"scrape_error\",\"outboundRequestCount\":0,\"position\":null,\"matchedUrl\":null}]"
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "573beda3-6b8f-472f-b5ea-bf40b6318a57",
+      "started_at": "2026-10-15T11:05:18.412Z",
+      "expires_at": "2026-10-15T15:05:18.412Z",
+      "target_keyword_ids": "[19,17]",
+      "max_cycles": 3,
+      "max_requests": 6,
+      "cycle_count": 0,
+      "request_count": 0,
+      "stop_reason": "operator_stop",
+      "archived_at": "2026-10-16 02:09:31"
+    },
+    {
+      "run_id": "ec65ea43-d743-4316-a6bb-aeaf72511705",
+      "started_at": "2026-10-16T02:25:01.285Z",
+      "expires_at": "2026-10-16T03:55:01.285Z",
+      "target_keyword_ids": "[19,17]",
+      "max_cycles": 3,
+      "max_requests": 6,
+      "cycle_count": 3,
+      "request_count": 3,
+      "stop_reason": "cycle_limit",
+      "archived_at": "2026-10-16T03:03:00.038Z"
+    }
+  ],
+  "auditCount": 29,
+  "auditHash": "0a6c14754d5ea6944792cb10bda8baaeca6768d99afc86944f4f228097b207cb",
+  "pilotAudit": [
+    {
+      "id": "36a97ea6-8c65-4085-abf6-9722630558cf",
+      "keywordID": 17,
+      "status": "failed",
+      "requests": 0
+    },
+    {
+      "id": "477bd564-de89-47f8-9330-1ff246ad201f",
+      "keywordID": 19,
+      "status": "completed",
+      "requests": 1
+    },
+    {
+      "id": "53b1c9c2-7617-4dcf-bd81-8c2506e1dd16",
+      "keywordID": 19,
+      "status": "completed",
+      "requests": 1
+    },
+    {
+      "id": "859e65d2-0b6e-43e2-b1f5-c621db743c47",
+      "keywordID": 17,
+      "status": "failed",
+      "requests": 0
+    },
+    {
+      "id": "8c39b4f7-9df0-4ffa-a72a-531e9229a877",
+      "keywordID": 17,
+      "status": "failed",
+      "requests": 0
+    },
+    {
+      "id": "9cf921df-0a3f-44f8-aa83-d450f654a70e",
+      "keywordID": 19,
+      "status": "completed",
+      "requests": 1
+    }
+  ],
+  "keywords": [
+    {
+      "ID": 17,
+      "domain": "fastwork.id/web-design/landing-page",
+      "keyword": "Jasa Pembuatan Landing Page, Mulai Rp 100.000",
+      "country": "ID",
+      "position": 1,
+      "url": "https://fastwork.id/web-design/landing-page",
+      "lastUpdated": "2026-10-15T11:12:58.204Z",
+      "history": "{\"2026-10-15\":1}",
+      "updating": 0
+    },
+    {
+      "ID": 19,
+      "domain": "www.enterkomputer.com/simulasi",
+      "keyword": "simulasi rakit pc",
+      "country": "ID",
+      "position": 1,
+      "url": "https://www.enterkomputer.com/simulasi/",
+      "lastUpdated": "2026-10-16T03:00:01.708Z",
+      "history": "{\"2026-10-15\":1,\"2026-10-16\":1}",
+      "updating": 0
+    }
+  ],
+  "keywordHash": "cf19b523f7acef16096d70d009b59bb25f99a03173bf6073b6520388c267ca78",
+  "domainCount": 2,
+  "domainHash": "abe3a69d7e16a2b855380718e2bfd5b5df5d84fcdbe260cd9ad793184b54f03a",
+  "locks": [],
+  "migrations": [
+    {
+      "name": "1707068556345-add-new-keyword-fields.js"
+    },
+    {
+      "name": "1707233039698-add-domain-searchconsole-field.js"
+    },
+    {
+      "name": "1709217223856-add-keyword-volume-field copy.js"
+    },
+    {
+      "name": "1740614400000-add-domain-scrape-strategy-fields.js"
+    },
+    {
+      "name": "1742428800000-add-domain-subdomain-matching-field.js"
+    },
+    {
+      "name": "1760400000000-add-refresh-safety-audit-and-locks.js"
+    },
+    {
+      "name": "1760486400000-add-hourly-pilot-state.js"
+    },
+    {
+      "name": "1792108800000-archive-hourly-pilot-runs.js"
+    }
+  ],
+  "integrity": [
+    {
+      "integrity_check": "ok"
+    }
+  ],
+  "settings": {
+    "scraper_type": "serper",
+    "scrape_interval": "never",
+    "scrape_retry": false,
+    "scrape_delay": "300000"
+  },
+  "settingsHash": "599b0ceb22499a58229cb51d918729bf1f802984326fa70a4f8f0898174417fa",
+  "retryQueue": [],
+  "providerCredentialValid": true,
+  "mockEnv": []
+}

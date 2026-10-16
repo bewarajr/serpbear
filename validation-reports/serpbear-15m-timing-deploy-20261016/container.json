@@ -1,0 +1,27 @@
+{
+  "containerID": "52aa98402cefa4989644d66ec52eab7363fa356dedfdec225e77c4312694452d",
+  "imageID": "sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d",
+  "commit": "a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4",
+  "startedAt": "2026-10-16T04:30:31.573969962Z",
+  "health": "healthy",
+  "mounts": [
+    {
+      "Type": "volume",
+      "Name": "serpbear-official-data",
+      "Source": "/var/lib/docker/volumes/serpbear-official-data/_data",
+      "Destination": "/app/data",
+      "Driver": "local",
+      "Mode": "rw",
+      "RW": true,
+      "Propagation": ""
+    }
+  ],
+  "ports": {
+    "3000/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "3180"
+      }
+    ]
+  }
+}

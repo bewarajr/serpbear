@@ -1,0 +1,48 @@
+{
+  "status": "15M_RETEST_V2_APPROVAL_FIX_READY",
+  "commit": "fe45fb4404eca6b991622e3f1e5ddf22220c5f92",
+  "imageTag": "serpbear-15m-retest-v2-approval:candidate-20261016",
+  "immutableImageID": "sha256:f78e4fca892b99512b107a9ed9dceb1cb86378c14dfebedf5fa86c4e83bfd54d",
+  "runtimeChange": "APPROVAL_TOKEN V1 replaced with exact V2 only; strict validation retained",
+  "jestSuites": 26,
+  "jestTests": 123,
+  "checks": {
+    "jest": "PASS",
+    "typescript": "PASS",
+    "eslint": "PASS",
+    "nextBuild": "PASS",
+    "dockerBuild": "PASS",
+    "mockRuntimeUAT": "PASS"
+  },
+  "tokenRegression": {
+    "phase": "approval_tokens",
+    "rejected": [
+      "V1",
+      "invalid"
+    ],
+    "databaseByteIdentical": true,
+    "providerDelta": 0
+  },
+  "uatRunID": "bdece577-b861-46f6-ab9d-40bf6cb6111c",
+  "pilotMockRequests": 6,
+  "normalRefreshSeparateMockRequests": 3,
+  "gapsMs": [
+    198,
+    243,
+    179
+  ],
+  "expiryMinutes": 90,
+  "expiryRequestDelta": 0,
+  "productionChanges": 0,
+  "liveProviderRequests": 0,
+  "files": {
+    "jest.log": "0e79f439d61736efc888a4b1c743e4d69829a36cc857dbbc649a2db2fa3ef46b",
+    "typescript.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "eslint.log": "47d18953f4060508da4e7fc6b771db8f65a239051156bd6997843a29fc4b1281",
+    "next-build.log": "1365035be10df99bf51b6bfb86dbfb093589de3e42f7ad86d993e08f0a426b21",
+    "docker-build.log": "17d0c210e77a5bd74c930f5b1e7d7ec8c357b3f1b6121c787f8ecece1af9e6c5",
+    "uat-phases.log": "f58f5d5db3e4154c81cb9512a4283f822f98622b67aef49cd3d2b8c2baba9b16",
+    "uat-runtime.log": "d453841b2bfe70143517dd0269cd7ef3518a33eacd9bebd452284e14e10370d6",
+    "uat-evidence.json": "4ddfacf4feef44bc7d890cb8f844a6c8a1c73b6e04960211b9e517e8f393c216"
+  }
+}

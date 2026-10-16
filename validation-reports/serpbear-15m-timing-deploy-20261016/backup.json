@@ -1,0 +1,13 @@
+{
+  "file": "/var/backups/serpbear/serpbear-pre-timing-fix-20261016T042932Z.sqlite",
+  "sha256": "b3f363ea69cc4a160c01c817306c2fde116ec09ef56c6740119a5b622171ea12",
+  "bytes": 139264,
+  "uid": 1000,
+  "gid": 1000,
+  "mode": "600",
+  "integrity": [
+    {
+      "integrity_check": "ok"
+    }
+  ]
+}

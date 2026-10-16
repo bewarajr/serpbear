@@ -3,7 +3,7 @@ name: serpbear-official
 services:
   app:
     container_name: serpbear-official-app
-    image: serpbear-hourly-15-minute-pilot:candidate-20261016
+    image: serpbear-dataforseo:candidate-20261016-v3
     restart: unless-stopped
     ports:
       - "127.0.0.1:3180:3000"

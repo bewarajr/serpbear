@@ -1,0 +1,35 @@
+name: serpbear-official
+
+services:
+  app:
+    container_name: serpbear-official-app
+    image: serpbear-hourly-15-minute-pilot:candidate-20261016
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3180:3000"
+    environment:
+      USER_NAME: "${USER_NAME}"
+      PASSWORD: "${PASSWORD}"
+      SECRET: "${SECRET}"
+      APIKEY: "${APIKEY}"
+      SESSION_DURATION: "${SESSION_DURATION:-24}"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL}"
+    volumes:
+      - serpbear_data:/app/data
+    networks:
+      - serpbear_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  serpbear_data:
+    name: serpbear-official-data
+
+networks:
+  serpbear_network:
+    name: serpbear-official-network
+    driver: bridge
