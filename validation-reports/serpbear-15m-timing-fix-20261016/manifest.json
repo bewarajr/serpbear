@@ -1,0 +1,57 @@
+{
+  "status": "15M_PILOT_TIMING_FIX_READY",
+  "sourceCommit": "a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4",
+  "imageTag": "serpbear-15m-timing-fix:candidate-20261016-v2",
+  "imageID": "sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d",
+  "jest": {
+    "suites": 25,
+    "tests": 119,
+    "passed": true
+  },
+  "typescript": "PASS",
+  "eslint": "PASS",
+  "nextBuild": "PASS",
+  "dockerBuild": "PASS",
+  "uatRunID": "66483e03-f84e-4890-af98-1a9b68e1846b",
+  "pilotMockRequests": 6,
+  "separateNormalRefreshMockRequests": 3,
+  "targetRequestGapsMs": [
+    224,
+    541,
+    234
+  ],
+  "normalConfiguredDelayMs": 300000,
+  "normalSimulatedDelayMs": 1000,
+  "normalObservedGapMs": 1346,
+  "sqliteReaderWriterIterations": 233,
+  "sqliteReaderWriterFailures": 0,
+  "activeGuardResponses": {
+    "status": 409,
+    "cases": 7,
+    "skippedAudits": 8,
+    "outboundRequests": 0
+  },
+  "expiryMinutes": 90,
+  "expiryProviderRequestDelta": 0,
+  "restartAfterCycle1": "PASS",
+  "restartAfterAutoStop": "PASS",
+  "fourthCycle": "NONE",
+  "sqliteIntegrity": "ok",
+  "productionMutations": 0,
+  "liveProviderRequests": 0,
+  "logChecks": {
+    "HeadersTimeoutError": false,
+    "worker_interrupted": false,
+    "SQLITE_BUSY": false,
+    "credentials": false
+  },
+  "files": {
+    "jest.log": "b3a33cab4b38834c15db52f1a8946c706d5eaf5dd1368ad6285943ff82a4f02f",
+    "typescript.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "eslint.log": "47d18953f4060508da4e7fc6b771db8f65a239051156bd6997843a29fc4b1281",
+    "next-build.log": "1365035be10df99bf51b6bfb86dbfb093589de3e42f7ad86d993e08f0a426b21",
+    "docker-build.log": "f871d99ae442c78240209287d8bcf608b47ed24471b759795b8d6b5a1f485758",
+    "mock-uat.json": "1d8bd24999b94ceea603a9e252898f47d5a40dd88904cb1a9ba204c7b80b88e0",
+    "mock-runtime.log": "df482c2920c828957bab9ef8d094ae08316226cb07a293a34130c3c66a554848"
+  }
+}

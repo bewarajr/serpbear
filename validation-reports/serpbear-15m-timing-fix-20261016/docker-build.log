@@ -1,0 +1,176 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.52kB done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/library/node:22-alpine
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context:
+#3 transferring context: 208B done
+#3 DONE 0.2s
+
+#4 [runtime-deps 1/5] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+#4 resolve docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 23.83kB done
+#5 DONE 0.2s
+
+#6 [runtime-deps 2/5] WORKDIR /app
+#6 CACHED
+
+#7 [runtime-deps 3/5] COPY package.json package-lock.json ./
+#7 CACHED
+
+#8 [deps 4/4] RUN npm ci
+#8 CACHED
+
+#9 [builder 3/7] COPY --from=deps /app/node_modules ./node_modules
+#9 CACHED
+
+#10 [builder 4/7] COPY . .
+#10 DONE 1.2s
+
+#11 [builder 5/7] RUN rm -rf data __tests__ __mocks__
+#11 DONE 0.8s
+
+#12 [builder 6/7] RUN npm run build
+#12 0.932 
+#12 0.932 > serpbear@3.1.0 build
+#12 0.932 > next build
+#12 0.932 
+#12 1.330 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#12 1.330 This information is used to shape Next.js' roadmap and prioritize features.
+#12 1.330 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#12 1.330 https://nextjs.org/telemetry
+#12 1.330 
+#12 1.439 info  - Linting and checking validity of types...
+#12 8.859 info  - Creating an optimized production build...
+#12 9.443 Browserslist: caniuse-lite is outdated. Please run:
+#12 9.443   npx browserslist@latest --update-db
+#12 9.443   Why you should do it regularly: https://github.com/browserslist/browserslist#browsers-data-updating
+#12 17.36 Browserslist: browsers data (caniuse-lite) is 8 months old. Please run:
+#12 17.36   npx update-browserslist-db@latest
+#12 17.36   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+#12 17.40 
+#12 17.40 warn - The `purge`/`content` options have changed in Tailwind CSS v3.0.
+#12 17.40 warn - Update your configuration file to eliminate this warning.
+#12 17.40 warn - https://tailwindcss.com/docs/upgrade-guide#configure-content-sources
+#12 22.38 info  - Compiled successfully
+#12 22.38 info  - Collecting page data...
+#12 24.83 info  - Generating static pages (0/10)
+#12 24.89 info  - Generating static pages (2/10)
+#12 24.91 info  - Generating static pages (4/10)
+#12 24.93 info  - Generating static pages (7/10)
+#12 25.12 info  - Generating static pages (10/10)
+#12 25.63 info  - Finalizing page optimization...
+#12 25.63 
+#12 25.66 Route (pages)                              Size     First Load JS
+#12 25.66 ┌ ○ /                                      5.37 kB         103 kB
+#12 25.66 ├   /_app                                  0 B            90.9 kB
+#12 25.66 ├ ○ /404                                   193 B          91.1 kB
+#12 25.66 ├ λ /api/adwords                           0 B            90.9 kB
+#12 25.66 ├ λ /api/clearfailed                       0 B            90.9 kB
+#12 25.66 ├ λ /api/cron                              0 B            90.9 kB
+#12 25.66 ├ λ /api/dbmigrate                         0 B            90.9 kB
+#12 25.66 ├ λ /api/domain                            0 B            90.9 kB
+#12 25.66 ├ λ /api/domains                           0 B            90.9 kB
+#12 25.66 ├ λ /api/hourly-pilot                      0 B            90.9 kB
+#12 25.66 ├ λ /api/ideas                             0 B            90.9 kB
+#12 25.66 ├ λ /api/insight                           0 B            90.9 kB
+#12 25.66 ├ λ /api/keyword                           0 B            90.9 kB
+#12 25.66 ├ λ /api/keywords                          0 B            90.9 kB
+#12 25.66 ├ λ /api/login                             0 B            90.9 kB
+#12 25.66 ├ λ /api/logout                            0 B            90.9 kB
+#12 25.66 ├ λ /api/notify                            0 B            90.9 kB
+#12 25.66 ├ λ /api/refresh                           0 B            90.9 kB
+#12 25.66 ├ λ /api/searchconsole                     0 B            90.9 kB
+#12 25.66 ├ λ /api/settings                          0 B            90.9 kB
+#12 25.66 ├ λ /api/volume                            0 B            90.9 kB
+#12 25.66 ├ ○ /domain/[slug]                         12.8 kB         219 kB
+#12 25.66 ├ ○ /domain/console/[slug]                 6.81 kB         145 kB
+#12 25.66 ├ ○ /domain/ideas/[slug]                   2.57 kB         215 kB
+#12 25.66 ├ ○ /domain/insight/[slug]                 4.75 kB         207 kB
+#12 25.66 ├ ○ /domains                               4.13 kB         126 kB
+#12 25.66 ├ ○ /login                                 1.83 kB        99.7 kB
+#12 25.66 └ ○ /research                              2.26 kB         209 kB
+#12 25.66 + First Load JS shared by all              101 kB
+#12 25.66   ├ chunks/framework-4556c45dd113b893.js   45.3 kB
+#12 25.66   ├ chunks/main-2405cebcd27988c1.js        32.3 kB
+#12 25.66   ├ chunks/pages/_app-fce250a3910c703d.js  11.8 kB
+#12 25.66   ├ chunks/webpack-d218775994f6eb6a.js     1.55 kB
+#12 25.66   └ css/f5bb5123d1057680.css               10 kB
+#12 25.66 
+#12 25.66 λ  (Server)  server-side renders at runtime (uses getInitialProps or getServerSideProps)
+#12 25.66 ○  (Static)  automatically rendered as static HTML (uses no initial props)
+#12 25.66 
+#12 26.02 npm notice
+#12 26.02 npm notice New major version of npm available! 10.9.9 -> 12.2.0
+#12 26.02 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+#12 26.02 npm notice To update run: npm install -g npm@12.2.0
+#12 26.02 npm notice
+#12 DONE 26.8s
+
+#13 [builder 7/7] RUN if [ -d .next/standalone/node_modules ]; then find .next/standalone/node_modules -type d ( -path '*/node_modules/tar' -o -path '*/node_modules/node-gyp' ) -prune -exec rm -rf {} +; fi
+#13 DONE 0.4s
+
+#14 [runtime-deps 4/5] RUN npm ci --omit=dev
+#14 CACHED
+
+#15 [runtime-deps 5/5] RUN find /app/node_modules -type d ( -path '*/node_modules/tar' -o -path '*/node_modules/node-gyp' ) -prune -exec rm -rf {} +
+#15 CACHED
+
+#16 [runner  3/15] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs &&     mkdir -p /app/data /app/utils && chown nextjs:nodejs /app/data /app/utils
+#16 CACHED
+
+#17 [runner  4/15] COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+#17 CACHED
+
+#18 [runner  5/15] COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+#18 DONE 0.6s
+
+#19 [runner  6/15] COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+#19 DONE 0.1s
+
+#20 [runner  7/15] COPY --from=builder --chown=nextjs:nodejs /app/cron.js ./
+#20 DONE 0.1s
+
+#21 [runner  8/15] COPY --from=builder --chown=nextjs:nodejs /app/scripts/activate-hourly-pilot.js ./scripts/activate-hourly-pilot.js
+#21 DONE 0.0s
+
+#22 [runner  9/15] COPY --from=builder --chown=nextjs:nodejs /app/utils/cronPolicy.js ./utils/cronPolicy.js
+#22 DONE 0.1s
+
+#23 [runner 10/15] COPY --from=builder --chown=nextjs:nodejs /app/email ./email
+#23 DONE 0.1s
+
+#24 [runner 11/15] COPY --from=builder --chown=nextjs:nodejs /app/database ./database
+#24 DONE 0.1s
+
+#25 [runner 12/15] COPY --from=builder --chown=nextjs:nodejs /app/.sequelizerc ./.sequelizerc
+#25 DONE 0.1s
+
+#26 [runner 13/15] COPY --from=builder --chown=nextjs:nodejs /app/entrypoint.sh ./entrypoint.sh
+#26 DONE 0.1s
+
+#27 [runner 14/15] COPY --from=runtime-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+#27 DONE 7.4s
+
+#28 [runner 15/15] RUN chmod +x /app/entrypoint.sh
+#28 DONE 0.5s
+
+#29 exporting to image
+#29 exporting layers
+#29 exporting layers 7.7s done
+#29 exporting manifest sha256:c2471239e3e4d22b5fbea6efd80a8abe55ae0faf6b3ca28322593e4d4321b464 done
+#29 exporting config sha256:4df3018b0eb78737cc65e1c52287b7c8b623848998036e0d4728e341d484c3c0 done
+#29 exporting attestation manifest sha256:08ba7d8098bcc9d6af08adab6dc88cca12940178088c847fb79aaa0ce74e6f07 0.0s done
+#29 exporting manifest list sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d 0.0s done
+#29 naming to docker.io/library/serpbear-15m-timing-fix:candidate-20261016-v2 done
+#29 unpacking to docker.io/library/serpbear-15m-timing-fix:candidate-20261016-v2
+#29 unpacking to docker.io/library/serpbear-15m-timing-fix:candidate-20261016-v2 5.0s done
+#29 DONE 12.7s

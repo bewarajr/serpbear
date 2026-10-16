@@ -1,5 +1,6 @@
 # SerpBear Hourly Enterkomputer dan Fastwork Pilot
 
+**Status kandidat timing fix: `15M_PILOT_TIMING_FIX_READY`** — commit `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`; belum dideploy.  
 **Status pilot live V2 (historis): `LIVE_PILOT_FAILED`**  
 **Status pilot live 15-minute V1 (Production, 16 Oktober 2026): `LIVE_15M_PILOT_PARTIAL`** — Run `ec65ea43-d743-4316-a6bb-aeaf72511705` selesai tiga siklus dan berhenti otomatis; Enterkomputer teramati tiga kali, Fastwork tidak memperoleh observasi provider.  
 **Production image saat pilot:** commit `f60a5f9a558638dbcea858460d174fe5b15123fc`, image `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a0431162a93243db50b20`; pilot kini nonaktif.  
@@ -723,3 +724,89 @@ Waktu penutupan siklus pada tabel pilot: siklus 1 `09:40:01.999 WIB`, siklus 2 `
 Ranking ID19 stabil di posisi 1 pada ketiga observasi, dengan URL cocok `www.enterkomputer.com/simulasi/`; URL ini sesuai dengan target Enterkomputer. Fastwork hostname matching tidak teruji karena tidak ada hasil provider, sehingga tidak ada kesimpulan ranking untuk ID17. Nilai device tersimpan tidak membuktikan SERP perangkat tertentu.
 
 **`LIVE_15M_PILOT_PARTIAL`** — tiga slot berjalan dan auto-stop, request tetap di bawah batas, lock kosong, serta SQLite utuh. Pilot tidak menyelesaikan observasi dua target karena Fastwork gagal pada semua siklus akibat jalur worker/guard di atas. Jangan ulangi atau aktifkan pilot tanpa perbaikan yang divalidasi dan approval aktivasi baru. Perbaikan minimum yang disarankan adalah memastikan refresh pilot tidak terkena jeda scrape lima menit per keyword dan worker tidak menandai siklus aktif sebagai stale sebelum handler selesai; validasi offline/mock terlebih dahulu.
+
+
+## 15-MINUTE PILOT — REFRESH TIMING FIX AND MOCK UAT
+
+**Status kandidat: `15M_PILOT_TIMING_FIX_READY` (16 Oktober 2026).** Status Production historis `LIVE_15M_PILOT_PARTIAL` untuk run `ec65ea43-d743-4316-a6bb-aeaf72511705` dan `LIVE_PILOT_FAILED` untuk run V2 tetap berlaku sebagai hasil historis. Task ini tidak mengubah, me-restart, men-deploy, atau mengaktifkan Production dan tidak mengirim request Serper/Google live.
+
+### Penyebab yang dikonfirmasi dari source
+
+1. `executeHourlyPilotSlot` memanggil `refreshAndUpdateKeywords([keyword], ...)` secara serial untuk ID19 lalu ID17. Settings pilot lama menimpa Basic/pagination/retry, tetapi mewarisi `scrape_delay=300000`.
+2. `refreshAndUpdateKeywords` tidur sesudah setiap keyword, termasuk keyword terakhir dalam singleton batch dan keyword yang gagal. Maka ID19 selesai, tidur lima menit, ID17 gagal, tidur lima menit lagi. Handler baru menutup/finalisasi siklus sekitar sepuluh menit setelah mulai.
+3. `getHourlyPilotStatus` memulihkan cycle `started` lebih tua dari dua menit bila tidak ada refresh lock. Lock ID19 sudah dilepas sebelum sleep sehingga polling menganggap cycle terinterupsi saat handler sebenarnya masih tidur. Status sementara berubah ke `worker_interrupted`. Finalizer lama kemudian menimpa cycle itu tanpa syarat `status=started`.
+4. Worker HTTP lama tidak menetapkan timeout eksplisit pada `fetch`; perilakunya bergantung pada Node/Undici. Log Production mencatat `HeadersTimeoutError`, sedangkan handler server tetap melanjutkan pekerjaannya. Timeout transport dan pemulihan stale adalah dua mekanisme terpisah.
+5. Budget total masih tersedia. Reservasi lama memeriksa instance cycle di memori yang masih `started`, lalu UPDATE SQL cycle mensyaratkan state persistent `started`. Setelah stale recovery, UPDATE itu menghasilkan nol perubahan; transaksi rollback dan melempar pesan generik `pilot_request_budget_exhausted`. Pada siklus ketiga, config juga dapat sudah dinonaktifkan oleh pemeriksaan cycle limit. Jalur-jalur penolakan ini memakai pesan yang sama dengan budget benar-benar habis, sehingga diagnosis audit menjadi menyesatkan.
+
+### Perbaikan kandidat
+
+- Hanya settings eksekusi pilot yang memakai `scrape_delay='0'`. Settings global/persistent 300000 ms dan perilaku refresh biasa tidak diubah.
+- Deadline cycle server **60 detik**, HTTP worker **90 detik**, recovery stale **120 detik**, semuanya di bawah slot 15 menit. Dua Basic Serper request tetap memakai timeout provider 15 detik per request. Expiry 90 menit juga dapat meng-abort pekerjaan lebih awal.
+- Abort signal diteruskan ke fetch provider. State run/cycle, expiry, dan deadline diperiksa sebelum reservasi, segera sebelum fetch, sesudah respons, dan saat commit ranking. Commit ranking memakai transaksi IMMEDIATE dengan pemeriksaan state yang sama.
+- Reservasi memakai transaksi IMMEDIATE, membaca cycle persistent yang terbaru, mempertahankan kondisi SQL batas dua request per cycle/enam per run, dan menolak reservasi ulang keyword dalam eksekusi yang sama. Reservasi gagal tidak menambah counter.
+- Error audit membedakan `pilot_request_budget_exhausted`, `pilot_cycle_invalidated`, `pilot_cycle_timeout`, `pilot_expired`, `pilot_disabled`, dan `pilot_run_changed`.
+- Finalizer hanya menutup cycle yang masih `started` dan tidak mengubah run baru dari handler run lama. Recovery mempertahankan lock owner hidup/tidak diketahui, serta hanya mereklamasi lock dari proses yang terbukti mati.
+- Single-Flight Lock, Manual Refresh Guard, autentikasi internal worker, no retry/no catch-up, slot unik, maksimum tiga siklus, dan archive run dipertahankan. Tidak ada perubahan schema, migration, Next.js, dependency lockfile, atau Dockerfile.
+
+### Identitas kandidat dan changed files
+
+- Baseline: `f60a5f9a558638dbcea858460d174fe5b15123fc`.
+- Worktree terisolasi: `/tmp/serpbear-15m-timing-fix`.
+- **Commit:** `a73b8e0eb11875cd9af5f3cebcfe974fa5baa5c4`.
+- **Tag:** `serpbear-15m-timing-fix:candidate-20261016-v2`.
+- **Immutable image ID:** `sha256:92a441913bcd8b892542677593f23d26c019ffae6ec800717b293f12691d9d0d`.
+- Label image `org.opencontainers.image.revision` cocok dengan commit di atas; `.Image` container UAT cocok dengan immutable ID tersebut.
+- Source runtime: `cron.js`, `utils/cronPolicy.js`, `utils/hourlyPilot.ts`, `utils/refresh.ts`, `utils/refreshErrors.ts`, `utils/scraper.ts`.
+- Tes: `__tests__/hourlyPilotTiming.test.ts`, `__tests__/hourlyPilotWorkerTimeout.test.ts`.
+- Harness UAT: `scripts/uat-pilot-timing/{README.md,compose.yml,control.cjs,init-db.cjs,mock-serper.cjs,network-guard.cjs}`. Total 14 file, 793 baris ditambah/44 dihapus; sebagian besar tambahan adalah tes/harness.
+
+### Offline validation
+
+| Pemeriksaan | Hasil |
+|---|---|
+| Full Jest | PASS — 25 suite, 119 tes |
+| TypeScript `tsc --noEmit` | PASS |
+| ESLint `npm run lint` | PASS |
+| Next.js production build | PASS |
+| Docker build dari commit kandidat | PASS |
+
+Regresi memakai SQLite in-memory nyata dan mock provider. Cakupan mencakup global delay 300000 ms dengan dua target tanpa sleep pilot; tiga cycle/enam request; duplicate slot dan callback bersamaan; refresh biasa tetap memanggil sleep 300000; HTTP 401/403/429 tanpa retry/history palsu; budget habis; expiry sebelum/dalam refresh; deadline cycle yang membatalkan fetch lambat; polling pada cycle valid; recovery orphan/dead-owner lock; penolakan commit/reservasi sesudah invalidasi; dan worker HTTP timeout eksplisit tanpa retry. Suite guard manual/bulk/retry/source spoofing yang sudah ada juga lulus.
+
+### Mock Runtime UAT pada image final
+
+Run sintetis: `66483e03-f84e-4890-af98-1a9b68e1846b`. Clock cron memakai slot sintetis **17 Oktober 2026, 09:00/09:15/09:30 WIB**, dipercepat menjadi interval wall-clock delapan detik. Timestamp audit/provider tetap wall-clock UAT sebenarnya. Nilai global delay tetap 300000 ms; hanya preload UAT memetakan sleep refresh biasa 300000 menjadi 1000 ms untuk uji normal refresh terpisah.
+
+| Cycle | Slot sintetis WIB | ID | Posisi sebelum → sesudah | Matched URL | HTTP | Request | Refresh Audit |
+|---|---|---:|---|---|---|---:|---|
+| 1 | 09:00 | 19 | 3 → 1 | `https://www.enterkomputer.com/simulasi` | 2xx | 1 | completed; `19d98a7d-8e87-409e-8519-3af552df344c` |
+| 1 | 09:00 | 17 | 4 → 1 | `https://fastwork.id/other-listing` | 2xx | 1 | completed; `6d454929-df71-4611-a741-571f301829b3` |
+| 2 | 09:15 | 19 | 1 → 1 | `https://www.enterkomputer.com/simulasi` | 2xx | 1 | completed; `c073ad72-40c9-493f-9649-135538e0e5c6` |
+| 2 | 09:15 | 17 | 1 → 1 | `https://fastwork.id/other-listing` | 2xx | 1 | completed; `44598310-272e-4eba-8fd3-db171d387355` |
+| 3 | 09:30 | 19 | 1 → 1 | `https://www.enterkomputer.com/simulasi` | 2xx | 1 | completed; `01d48b37-f415-4cab-8eb3-ef7f46f6c0fa` |
+| 3 | 09:30 | 17 | 1 → 1 | `https://fastwork.id/other-listing` | 2xx | 1 | completed; `176bd03e-ba96-46da-b047-ea2385b788f1` |
+
+- Ketiga cycle `completed`, masing-masing dua request; **enam request pilot total**. Jeda request ID19→ID17: **224, 541, 234 ms**. Tidak ada jeda lima menit.
+- Startup/aktivasi: nol request. Next.js `server.js` dan `cron.js` sehat. Restart sesudah cycle 1 menghasilkan slot 09:15/09:30 berikutnya tanpa mengulang slot 09:00; restart sesudah auto-stop tetap disabled. Menunggu melewati interval berikutnya tidak menghasilkan cycle keempat/request ketujuh.
+- Final main run: `enabled=0`, `cycle_count=3`, `request_count=6`, `stop_reason=cycle_limit`. Enam audit sukses/2xx dengan satu request masing-masing; lock kosong; SQLite `integrity_check=ok`. Keyword tidak dipilih (20/21) tidak berubah selama pilot; legacy Ranking History tetap tersimpan dan observasi sukses diperbarui.
+- Tujuh variasi manual/bulk/domain/retry/source spoof ditolak HTTP 409 `HOURLY_PILOT_ACTIVE`; delapan audit skipped, nol outbound, ranking/counter tetap sama. Activation preflight juga menolak target lock yang sudah aktif; Single-Flight menolak refresh tumpang tindih tanpa provider request.
+- Akses SQLite bersamaan: **233 iterasi reader/writer**, nol kegagalan. Tidak ada `SQLITE_BUSY` pada log.
+- Uji normal refresh sesudah auto-stop menggunakan **tiga mock request tambahan yang terpisah dari enam request pilot**. Delay asli tetap 300000 ms; preload UAT mensimulasikannya menjadi 1000 ms, dengan gap aktual 1346 ms. Manual refresh target kembali tersedia; counter pilot tetap enam. Probe asynchronous memakai polling berbatas, setelah pemeriksaan 500 ms pada iterasi sebelumnya terbukti terlalu dini.
+- Uji expiry terpisah pada batas **90 menit**: `enabled=0`, `stop_reason=expired`, nol request tambahan. SQLite sesudah probe expiry tetap `ok`.
+- Network Docker `internal=true`, port host tidak dipublikasikan, hanya volume SQLite UAT khusus serta bind harness read-only yang dipasang. Tidak ada secret atau mount Production. Probe external egress ditolak sebelum network. Log bebas `HeadersTimeoutError`, `worker_interrupted`, `SQLITE_BUSY`, dan credential sintetis. Poll status saat startup sempat mendapat `ECONNREFUSED` sebelum server siap, lalu pulih; tidak memicu refresh.
+- Container, network, dan volume milik project UAT sudah dibersihkan. Image kandidat dan image rollback dipertahankan.
+
+Fastwork sengaja cocok ke `/other-listing` pada hostname yang disetujui; hasil itu tidak membuktikan ranking URL landing-page existing. Matched URL Enterkomputer cocok pada `/simulasi`. Device field tidak digunakan sebagai bukti SERP perangkat tertentu.
+
+### Bukti permanen
+
+Bukti disimpan di `validation-reports/serpbear-15m-timing-fix-20261016/`: `manifest.json`, `mock-uat.json`, `mock-runtime.log`, serta log Jest/TypeScript/ESLint/Next.js/Docker. SHA-256 `mock-uat.json`: `1d8bd24999b94ceea603a9e252898f47d5a40dd88904cb1a9ba204c7b80b88e0`.
+
+### Deployment dan rollback berikutnya
+
+Deployment memerlukan approval baru untuk commit/image di atas. Sebelum deployment, lakukan fresh preflight image/data/ID19/17/provider/lock, pastikan pilot disabled, buat backup SQLite konsisten di penyimpanan permanen dan verifikasi checksum/integrity. Deploy hanya service app dengan image immutable yang disetujui, mock/test mode mati, Global Never, retry Disabled; pertahankan config/histori run, audit, keyword, URL dan Ranking History. Tidak ada schema migration baru. Verifikasi health, server/cron, audit baseline, lock, SQLite, dan browser tanpa refresh live.
+
+Rollback: image baseline `sha256:873e9a2dba19b34ed27a22efd78f5f2c6876b016ea0a0431162a93243db50b20` masih tersedia lokal dan diverifikasi dengan image inspect. Jika deployment gagal saat pilot disabled, kembalikan hanya service app/deklarasi image ke baseline dengan volume yang sama; jangan reset histori atau restore SQLite secara otomatis. Image baseline tetap memiliki masalah timing sehingga tidak boleh dipakai untuk retest live sebelum koreksi siap.
+
+Aktivasi live memerlukan approval baru yang terpisah setelah deployment/verifikasi, run ID baru, dan tiga slot quarter-hour dihitung dari waktu aktivasi/registrasi aktual. Approval live sebelumnya tidak dipakai ulang. Batas tetap tiga cycle/dua request per cycle/enam per run/expiry 90 menit. Provider lambat/error dapat menghabiskan attempted cycle tanpa observasi sukses; tidak ada retry atau perpanjangan otomatis. Mock UAT tidak menjadi bukti keberhasilan SERP live.
+
+**`15M_PILOT_TIMING_FIX_READY`** — implementasi, semua pemeriksaan offline, Docker build, dan isolated Mock Runtime UAT pada image final lulus. Belum dideploy atau diaktifkan di Production.
