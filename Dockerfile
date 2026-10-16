@@ -1,8 +1,15 @@
 # Stage 1: Install dependencies
 FROM node:22-alpine AS deps
 WORKDIR /app
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Install the exact production dependency graph for the runtime image. The
+# migration CLI is a production dependency because entrypoint.sh invokes it.
+FROM node:22-alpine AS runtime-deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
 # Stage 2: Build the application
 FROM node:22-alpine AS builder
@@ -33,25 +40,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/database ./database
 COPY --from=builder --chown=nextjs:nodejs /app/.sequelizerc ./.sequelizerc
 COPY --from=builder --chown=nextjs:nodejs /app/entrypoint.sh ./entrypoint.sh
 
-# Install packages needed at runtime that are NOT reliably traced
-# into the standalone node_modules by Next.js:
-# - croner, cryptr, dotenv: used by cron.js (runs outside Next.js)
-# - @googleapis/searchconsole: Google API packages have complex module
-#   resolution that Next.js 12 file tracing (nft) does not follow
-# - sequelize-cli: used by entrypoint.sh for DB migrations
-# - concurrently: process manager for server.js + cron.js
-RUN chmod +x /app/entrypoint.sh && \
-    rm -f package.json && npm init -y && \
-    npm install --no-package-lock \
-      croner@9.0.0 \
-      cryptr@6.4.0 \
-      dotenv@16.0.3 \
-      @googleapis/searchconsole@1.0.5 \
-      sequelize-cli@6.6.5 \
-      concurrently@7.6.0 \
-      @isaacs/ttlcache@1.4.1 && \
-    npm cache clean --force && \
-    rm -rf /tmp/* /root/.npm
+COPY --from=runtime-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+RUN chmod +x /app/entrypoint.sh
 
 USER nextjs
 

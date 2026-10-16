@@ -5,7 +5,7 @@ import { useAddDomain, useDeleteDomain, useFetchDomains, useUpdateDomain } from 
 import { useAddKeywords, useDeleteKeywords,
    useFavKeywords, useFetchKeywords, useRefreshKeywords, useFetchSingleKeyword } from '../../services/keywords';
 import { dummyDomain, dummyKeywords, dummySettings } from '../../__mocks__/data';
-import { useFetchSettings } from '../../services/settings';
+import { useFetchSettings, useUpdateSettings } from '../../services/settings';
 
 jest.mock('../../services/domains');
 jest.mock('../../services/keywords');
@@ -31,12 +31,14 @@ const useAddKeywordsFunc = useAddKeywords as jest.Mock<any>;
 const useUpdateDomainFunc = useUpdateDomain as jest.Mock<any>;
 const useDeleteDomainFunc = useDeleteDomain as jest.Mock<any>;
 const useFetchSettingsFunc = useFetchSettings as jest.Mock<any>;
+const useUpdateSettingsFunc = useUpdateSettings as jest.Mock<any>;
 const useFetchSingleKeywordFunc = useFetchSingleKeyword as jest.Mock<any>;
 
 describe('SingleDomain Page', () => {
    const queryClient = new QueryClient();
    beforeEach(() => {
       useFetchSettingsFunc.mockImplementation(() => ({ data: { settings: dummySettings }, isLoading: false }));
+      useUpdateSettingsFunc.mockImplementation(() => ({ mutate: () => { }, isLoading: false }));
       useFetchDomainsFunc.mockImplementation(() => ({ data: { domains: [dummyDomain] }, isLoading: false }));
       useFetchKeywordsFunc.mockImplementation(() => ({ keywordsData: { keywords: dummyKeywords }, keywordsLoading: false }));
       const fetchPayload = { history: dummyKeywords[0].history || [], searchResult: dummyKeywords[0].lastResult || [] };
@@ -111,6 +113,14 @@ describe('SingleDomain Page', () => {
    });
 
    it('Country Filter should function properly', async () => {
+      const mixedCountryKeywords = [
+         { ...dummyKeywords[0], country: 'US' },
+         { ...dummyKeywords[1], country: 'CA' },
+      ];
+      useFetchKeywordsFunc.mockImplementation(() => ({
+         keywordsData: { keywords: mixedCountryKeywords },
+         keywordsLoading: false,
+      }));
       render(<QueryClientProvider client={queryClient}><SingleDomain /></QueryClientProvider>);
       const button = screen.getByTestId('filter_button');
       if (button) fireEvent.click(button);
@@ -122,7 +132,8 @@ describe('SingleDomain Page', () => {
       const firstCountry = document.querySelector('.country_filter .select_list ul li:nth-child(1)');
       if (firstCountry) fireEvent.click(firstCountry);
       const keywordsCount = document.querySelectorAll('.keyword').length;
-      expect(keywordsCount).toBe(0);
+      expect(keywordsCount).toBe(1);
+      expect(document.querySelector('.domKeywords_keywords .keyword a')?.textContent).toBe('compress image');
    });
 
    // Tags Filter should function properly

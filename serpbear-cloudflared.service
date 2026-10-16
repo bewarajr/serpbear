@@ -1,0 +1,16 @@
+[Unit]
+Description=SerpBear Cloudflare Tunnel for bewara.xyz
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=simple
+User=kiwkiw
+Group=kiwkiw
+WorkingDirectory=/home/kiwkiw/projects/serpbear
+ExecStart=/home/kiwkiw/.local/bin/cloudflared tunnel --config /home/kiwkiw/projects/serpbear/.serpbear-cloudflared.yml run
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -79,7 +79,9 @@ export const updateKeywordPosition = async (keywordRaw:Keyword, updatedKeyword: 
          const { history } = keyword;
          const theDate = new Date();
          const dateKey = `${theDate.getFullYear()}-${theDate.getMonth() + 1}-${theDate.getDate()}`;
-         history[dateKey] = newPos;
+         if (!updatedKeyword.error) {
+            history[dateKey] = newPos;
+         }
 
          const updatedVal = {
             position: newPos,

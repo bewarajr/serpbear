@@ -27,7 +27,12 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
+.serpbear-tunnel-credentials.json
+.serpbear-tunnel-created
+.serpbear-cloudflare-dns-routed
+.serpbear-cloudflared.yml
 
 # vercel
 .vercel
